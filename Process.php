@@ -331,6 +331,36 @@ class Process
     }
 
     /**
+    /**
+     * Waits for the process to arrive with output when satisfy callback
+     *
+     * @param callable $callback A valid PHP callback
+     **/
+    public function waitUntil(callable $callback)
+    {
+        $reading = true;
+        $old = $this->callback;
+
+        $this->callback = function($type, $buffer) use (&$reading, $callback, $old) {
+            call_user_func($old, $type, $buffer);
+
+            if (call_user_func($callback, $type, $buffer)) {
+                $reading = false;
+            }
+        };
+
+        do {
+            $this->checkTimeout();
+            $running = '\\' === DIRECTORY_SEPARATOR ? $this->isRunning() : $this->processPipes->areOpen();
+            $close = '\\' !== DIRECTORY_SEPARATOR || !$running;
+            $this->readPipes(true, $close);
+
+        } while ($running && $reading);
+
+        $this->callback = $old;
+    }
+
+    /**
      * Waits for the process to terminate.
      *
      * The callback receives the type of output (out or err) and some bytes
