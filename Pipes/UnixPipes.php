@@ -95,7 +95,7 @@ class UnixPipes extends AbstractPipes
     public function readAndWrite($blocking, $close = false)
     {
         $this->unblock();
-        $w = $this->write();
+        $w = $this->writeInput();
 
         $read = $e = array();
         $r = $this->pipes;

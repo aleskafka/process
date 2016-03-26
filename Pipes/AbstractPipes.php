@@ -86,7 +86,7 @@ abstract class AbstractPipes implements PipesInterface
     /**
      * Writes input to stdin.
      */
-    protected function write()
+    protected function writeInput()
     {
         if (!isset($this->pipes[0])) {
             return;
