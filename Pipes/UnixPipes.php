@@ -117,10 +117,21 @@ class UnixPipes extends AbstractPipes
             // lose key association, we have to find back the key
             $read[$type = array_search($pipe, $this->pipes, true)] = '';
 
+            $reading = 0;
             do {
-                $data = fread($pipe, self::CHUNK_SIZE);
-                $read[$type] .= $data;
-            } while (isset($data[0]));
+                if ($data = fread($pipe, self::CHUNK_SIZE)) {
+                    $reading = 1;
+                    $read[$type] .= $data;
+
+                } elseif (strlen($read[$type])>=8092 && $reading===1) {
+                    usleep(1000);
+                    $reading = 2;
+
+                } else {
+                    $reading = 0;
+                }
+
+            } while ($reading);
 
             if (!isset($read[$type][0])) {
                 unset($read[$type]);
