@@ -102,11 +102,12 @@ abstract class AbstractPipes implements PipesInterface
         }
 
         foreach ($w as $stdin) {
-            if (isset($this->inputBuffer[0])) {
-                $written = fwrite($stdin, $this->inputBuffer);
-                $this->inputBuffer = substr($this->inputBuffer, $written);
-                if (isset($this->inputBuffer[0])) {
-                    return array($this->pipes[0]);
+            while (strlen($this->inputBuffer)) {
+                $written = fwrite($stdin, $this->inputBuffer, 2 << 18); // write 512k
+                if ($written > 0) {
+                    $this->inputBuffer = (string) substr($this->inputBuffer, $written);
+                } else {
+                    break;
                 }
             }
 
