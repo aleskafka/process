@@ -31,13 +31,7 @@ abstract class AbstractPipes implements PipesInterface
 
     public function __construct($input)
     {
-        if (is_resource($input)) {
-            $this->input = $input;
-        } elseif (is_string($input)) {
-            $this->inputBuffer = $input;
-        } else {
-            $this->inputBuffer = (string) $input;
-        }
+        $this->write($input);
     }
 
     /**
@@ -49,6 +43,20 @@ abstract class AbstractPipes implements PipesInterface
             fclose($pipe);
         }
         $this->pipes = array();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function write($input)
+    {
+        if (is_resource($input)) {
+            $this->input = $input;
+        } elseif (is_string($input)) {
+            $this->inputBuffer = $input;
+        } else {
+            $this->inputBuffer = (string) $input;
+        }
     }
 
     /**
@@ -133,10 +141,16 @@ abstract class AbstractPipes implements PipesInterface
             }
         }
 
-        // no input to read on resource, buffer is empty
         if (null === $this->input && !isset($this->inputBuffer[0])) {
-            fclose($this->pipes[0]);
-            unset($this->pipes[0]);
+            if ('\\' === DIRECTORY_SEPARATOR) {
+                // no input to read on resource, buffer is empty
+                fclose($this->pipes[0]);
+                unset($this->pipes[0]);
+
+            } elseif (1 === count($this->pipes) && array(0) === array_keys($this->pipes)) {
+                fclose($this->pipes[0]);
+                unset($this->pipes[0]);
+            }
         }
 
         if (!$w) {

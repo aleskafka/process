@@ -37,6 +37,13 @@ interface PipesInterface
     public function getFiles();
 
     /**
+     * Write data to stdin
+     *
+     * @param resource|int
+     */
+    public function write($input);
+
+    /**
      * Reads data in file handles and pipes.
      *
      * @param bool $blocking Whether to use blocking calls or not.

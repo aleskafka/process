@@ -331,6 +331,18 @@ class Process
     }
 
     /**
+     * Writes to stdin when process is running
+     *
+     * @param resource|string
+     */
+    public function write($input)
+    {
+        $this->requireProcessIsStarted(__FUNCTION__);
+
+        $this->updateStatus(false);
+        $this->processPipes->write($input);
+    }
+
     /**
      * Waits for the process to arrive with output when satisfy callback
      *
