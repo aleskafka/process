@@ -169,6 +169,7 @@ class Process
 
     public function __destruct()
     {
+        $this->callback = $this->buildCallback();
         $this->stop(0);
     }
 
