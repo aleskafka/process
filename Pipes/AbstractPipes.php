@@ -11,7 +11,7 @@
 
 namespace Symfony\Component\Process\Pipes;
 
-use use Symfony\Component\Process\Exception\RuntimeException;;
+use Symfony\Component\Process\Exception\RuntimeException;
 
 
 /**
