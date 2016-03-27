@@ -344,11 +344,16 @@ class Process
     }
 
     /**
-     * Waits for the process to arrive with output when satisfy callback
+     * Waits for the process to arrive with output that satisfies callback
      *
      * @param callable $callback A valid PHP callback
+     * @param bool if callback must be satisfied
+     *
+     * @return int|void exitcode when process exited
+     *
+     * @throws RuntimeException when callback is not satisfied
      **/
-    public function waitUntil(callable $callback)
+    public function waitUntil(callable $callback, $need=true)
     {
         $reading = true;
         $old = $this->callback;
@@ -364,12 +369,26 @@ class Process
         do {
             $this->checkTimeout();
             $running = '\\' === DIRECTORY_SEPARATOR ? $this->isRunning() : $this->processPipes->areOpen();
-            $close = '\\' !== DIRECTORY_SEPARATOR || !$running;
-            $this->readPipes(true, $close);
-
+            $this->readPipes($running, '\\' !== DIRECTORY_SEPARATOR || !$running);
         } while ($running && $reading);
 
         $this->callback = $old;
+
+        if ($reading) {
+            while ($this->isRunning()) {
+                usleep(1000);
+            }
+
+            if ($this->processInformation['signaled'] && $this->processInformation['termsig'] !== $this->latestSignal) {
+                throw new RuntimeException(sprintf('The process has been signaled with signal "%s".', $this->processInformation['termsig']));
+            }
+
+            if ($need) {
+                throw new RuntimeException('Process waitUntil did not end with satisfied callback.');
+            }
+
+            return $this->exitcode;
+        }
     }
 
     /**
