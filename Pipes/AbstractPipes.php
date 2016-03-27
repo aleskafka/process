@@ -11,6 +11,9 @@
 
 namespace Symfony\Component\Process\Pipes;
 
+use use Symfony\Component\Process\Exception\RuntimeException;;
+
+
 /**
  * @author Romain Neutron <imprec@gmail.com>
  *
@@ -47,9 +50,15 @@ abstract class AbstractPipes implements PipesInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws RuntimeException When stdin is closed
      */
     public function write($input)
     {
+        if ($this->pipes && !isset($this->pipes[0])) {
+            throw new RuntimeException('Process stdin pipe is closed.');
+        }
+
         if (is_resource($input)) {
             $this->input = $input;
         } elseif (is_string($input)) {
