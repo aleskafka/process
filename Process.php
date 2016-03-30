@@ -371,7 +371,7 @@ class Process
             $this->checkTimeout();
             $running = '\\' === DIRECTORY_SEPARATOR ? $this->isRunning() : $this->processPipes->areOpen();
             $this->readPipes($running, '\\' !== DIRECTORY_SEPARATOR || !$running);
-        } while ($running && $reading);
+        } while ($running && $reading && $this->exitcode===null);
 
         $this->callback = $old;
 
