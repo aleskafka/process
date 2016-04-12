@@ -352,10 +352,13 @@ class Process
      *
      * @return int|void exitcode when process exited
      *
-     * @throws RuntimeException when callback is not satisfied
+     * @throws RuntimeException When callback is not satisfied
+     * @throws LogicException   When process is not yet started
      **/
     public function waitUntil(callable $callback, $need=true)
     {
+        $this->requireProcessIsStarted(__FUNCTION__);
+
         $reading = true;
         $old = $this->callback;
 
