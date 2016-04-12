@@ -345,6 +345,31 @@ class Process
     }
 
     /**
+     * Runs one loop of the process and exits
+     *
+     * @throws RuntimeException When process has been signaled
+     * @throws LogicException   When process is not yet started
+     **/
+    public function runOnce()
+    {
+        $this->requireProcessIsStarted(__FUNCTION__);
+
+        $this->checkTimeout();
+        $running = '\\' === DIRECTORY_SEPARATOR ? $this->isRunning() : $this->processPipes->areOpen();
+        $this->readPipes($running, '\\' !== DIRECTORY_SEPARATOR || !$running);
+
+        if (!$running) {
+            while ($this->isRunning()) {
+                usleep(1000);
+            }
+
+            if ($this->processInformation['signaled'] && $this->processInformation['termsig'] !== $this->latestSignal) {
+                throw new RuntimeException(sprintf('The process has been signaled with signal "%s".', $this->processInformation['termsig']));
+            }
+        }
+    }
+
+    /**
      * Waits for the process to arrive with output that satisfies callback
      *
      * @param callable $callback A valid PHP callback
