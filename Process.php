@@ -1522,7 +1522,7 @@ class Process
 
                 return false;
             }
-        } elseif ($signal===9) {
+        } elseif ($signal===9 || $signal===15) {
             exec("ps -o pid,ppid -ax 2>&1", $ps);
 
             $processlist = [];
@@ -1543,7 +1543,7 @@ class Process
             }
 
             foreach (array_filter(array_map('intval', $tree)) as $treePid) {
-                exec("kill -9 " . $treePid . " 2>&1");
+                exec("kill -$signal $treePid 2>&1");
             }
 
         } else {
