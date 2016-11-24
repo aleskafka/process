@@ -1522,6 +1522,30 @@ class Process
 
                 return false;
             }
+        } elseif ($signal===9) {
+            exec("ps -o pid,ppid -ax 2>&1", $ps);
+
+            $processlist = [];
+            foreach (array_filter(array_map('trim', $ps)) as $line) {
+                list($child, $parent) = preg_split("/\s+/", $line);
+                $processlist[$child] = (int) $parent;
+            }
+
+            $tree = [$pid];
+            $found = [$pid];
+            while ($parentPid = (int) array_pop($found)) {
+                foreach (array_keys($processlist, $parentPid) as $childPid) {
+                    if (in_array($childPid, $tree)===FALSE) {
+                        array_unshift($tree, $childPid);
+                        $found[] = $childPid;
+                    }
+                }
+            }
+
+            foreach (array_filter(array_map('intval', $tree)) as $treePid) {
+                exec("kill -9 " . $treePid . " 2>&1");
+            }
+
         } else {
             if (!$this->enhanceSigchildCompatibility || !$this->isSigchildEnabled()) {
                 $ok = @proc_terminate($this->process, $signal);
